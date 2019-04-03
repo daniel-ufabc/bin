@@ -1,0 +1,3 @@
+#!/bin/bash
+ssh daniel.martin@hostel.ufabc.edu.br
+

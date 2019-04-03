@@ -1,0 +1,29 @@
+#!/bin/bash
+# based on https://askubuntu.com/a/592206/940750
+
+if [ $# -lt 5 ]
+then
+  echo "Usage: `basename $0` <x_min> <x_max> <y_min> <y_max> <input-pdf> <output-pdf>"
+  echo "Notes:"
+  echo " - all coordinates are absolute; no calculation of width/height necessary"
+  echo " - use 'gv' to determine the coordinates"
+  exit 65
+fi
+
+xmin="$1"
+xmax="$2"
+ymin="$3"
+ymax="$4"
+file="$5"
+outfile="$6"
+
+#base="${file%.*}"
+#outfile="${base}_cropped.pdf"
+
+# >&2 echo "writing to: $outfile"
+
+gs -q \
+  -o $outfile \
+  -sDEVICE=pdfwrite \
+  -c "[/CropBox [$xmin $ymin $xmax $ymax] /PAGES pdfmark" \
+  -f $file

@@ -1,0 +1,2 @@
+#!/bin/bash
+sleep $@ ; mpg321 ~/bin/media/incoming.mp3

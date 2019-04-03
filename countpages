@@ -1,0 +1,3 @@
+#!/bin/bash
+
+pdftk $1 dump_data|grep NumberOfPages| awk '{print $2}'

@@ -1,0 +1,21 @@
+#!/bin/bash
+
+CODE=$(date +%s%N | sha256sum | base64 | head -c 8 | tr '[:upper:]' '[:lower:]')
+qrencode --size=5 -o /tmp/qrcode.png "$CODE"
+convert /tmp/qrcode.png /tmp/qrcode.pdf
+
+# to list all fonts, type on a terminal:
+# convert -list font | grep 'Font:'
+# echo "text 15,80 \"$CODE\"" > /tmp/code.txt
+# convert -size 360x360 xc:white -font "Roboto-Bold" -pointsize 28 -fill black -draw @/tmp/code.txt /tmp/code.png
+
+# convert -background white -fill black -font "Roboto-Bold" -pointsize 36 label:"$CODE" /tmp/code.png
+convert -background white -fill black -font "Ubuntu-Mono" -pointsize 36 label:"$CODE" /tmp/code.png
+
+convert /tmp/code.png /tmp/code.pdf
+
+pdfjam --paper 'a4paper' --scale 0.1 --offset '7.5cm -11.5cm' --outfile /tmp/a4qrcode.pdf /tmp/qrcode.pdf
+pdfjam --paper 'a4paper' --scale 0.1 --offset '7.5cm -10cm' --outfile /tmp/a4code.pdf /tmp/code.pdf
+
+pdftk /tmp/a4code.pdf stamp /tmp/a4qrcode.pdf output /tmp/stamp.pdf
+pdftk $1 stamp /tmp/stamp.pdf output final.pdf

@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# sudo apt-get install zbar-tools
+
+croppdf 470 550 140 50 "$1" "/tmp/cropped.pdf" > /dev/null
+N=$(pdftk /tmp/cropped.pdf dump_data|grep NumberOfPages| awk '{print $2}')
+if ((N > 1))
+then
+   >&2 echo "${N} pages"
+   for j in $(seq 1 $N)
+   do
+       >&2 echo -n "processing page $j... "
+       convert -density 288 "/tmp/cropped.pdf[$j]" -resize 50% /tmp/image.jpg
+       zbarimg --raw -q /tmp/image.jpg
+   done
+else
+    convert -density 288 "/tmp/cropped.pdf" -resize 50% /tmp/image.jpg
+    zbarimg --raw -q /tmp/image.jpg
+fi
+

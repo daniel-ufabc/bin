@@ -1,0 +1,51 @@
+#!/bin/bash
+
+for file in *.pdf
+do
+    base="${file%.*}"
+    outfile="${base}-qr.pdf"
+    croppdf 470 550 140 50 "$file" "$outfile"
+    N=$(pdftk "$file" dump_data|grep NumberOfPages| awk '{print $2}')
+    echo "${N} pages"
+    N=$((N-1))
+    for j in $(seq 0 $N)
+    do
+	echo -n "processing page $j... "
+	convert -density 288 "${outfile}[$j]" -resize 50% image.jpg
+	CODE=$(zbarimg --raw -q image.jpg)
+	mkdir -p $CODE
+	K=$((j+1))
+	pdftk "$file" cat "$K" output "./${CODE}/${base}-${j}.pdf"
+	echo "${CODE}"
+    done
+done
+
+ls -1d */ --color=none | grep -v 'ZZZ' > /tmp/files
+mkdir -p ZZZ
+cat /tmp/files | while read d; do CODE="${d%/*}"; joinpdf $d/*.pdf; mv output.pdf "ZZZ/${CODE}.pdf"; done
+rm /tmp/files
+echo 'files assembled in folder ZZZ'
+exit
+
+## The following did not work... (using croppdf script that uses gs)
+for file in *.pdf
+do
+    BASE="${file%%.*}"
+    NEW="$BASE-qr.pdf"
+    CM="28.34677" # BP
+    LEFT="17"
+    TOP="24.5"
+    RIGHT="1.5"
+    BOTTOM="2"
+    LBP=$(python3 -c "print($LEFT * $CM)")
+    TBP=$(python3 -c "print($TOP * $CM)")
+    RBP=$(python3 -c "print($RIGHT * $CM)")
+    BBP=$(python3 -c "print($BOTTOM * $CM)")
+    L="${LBP%%.*}"
+    T="${TBP%%.*}"
+    R="${RBP%%.*}"
+    B="${BBP%%.*}"
+    C="'$L $T $R $B'"
+    echo "pdfcrop --margins $C --clip \"$file\" \"$NEW\""
+    pdfcrop --margins $C --clip "$file" "$NEW"
+done
